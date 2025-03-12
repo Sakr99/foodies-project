@@ -1,7 +1,81 @@
-import React from 'react'
+"use client";
 
-const ShreMeals = () => {
-  return <h1>ShreMeals</h1>;
+import { useState } from "react";
+import ImagePicker from "@/app/components/meals/image-picker";
+import classes from "./page.module.css";
+
+export default function ShareMealPage() {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    const formData = new FormData(event.target);
+
+    try {
+      const response = await fetch("/api/share-meal", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      setMessage(result.message);
+    } catch (error) {
+      setMessage("Failed to share meal. Please try again.");
+    }
+
+    setLoading(false);
+  }
+
+  return (
+    <>
+      <header className={classes.header}>
+        <h1>
+          Share your <span className={classes.highlight}>favorite meal</span>
+        </h1>
+        <p>Or any other meal you feel needs sharing!</p>
+      </header>
+      <main className={classes.main}>
+        <form className={classes.form} onSubmit={handleSubmit}>
+          <div className={classes.row}>
+            <p>
+              <label htmlFor="name">Your name</label>
+              <input type="text" id="name" name="name" required />
+            </p>
+            <p>
+              <label htmlFor="email">Your email</label>
+              <input type="email" id="email" name="email" required />
+            </p>
+          </div>
+          <p>
+            <label htmlFor="title">Title</label>
+            <input type="text" id="title" name="title" required />
+          </p>
+          <p>
+            <label htmlFor="summary">Short Summary</label>
+            <input type="text" id="summary" name="summary" required />
+          </p>
+          <p>
+            <label htmlFor="instructions">Instructions</label>
+            <textarea
+              id="instructions"
+              name="instructions"
+              rows="10"
+              required
+            ></textarea>
+          </p>
+          <ImagePicker label="Your image" name="image" />
+          <p className={classes.actions}>
+            <button type="submit" disabled={loading}>
+              {loading ? "Sharing..." : "Share Meal"}
+            </button>
+          </p>
+          {message && <p>{message}</p>}
+        </form>
+      </main>
+    </>
+  );
 }
-
-export default ShreMeals
